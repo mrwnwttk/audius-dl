@@ -47,7 +47,6 @@ track_id = track_id[-1]
 title = link_array[4]
 title = urllib.parse.unquote(title)
 title = title [:-(len(track_id) + 1)]
-#print(title)
 
 curl_string = "curl --silent 'https://discoveryprovider3.audius.co/tracks_including_unlisted' -H 'authority: discoveryprovider3.audius.co' -H 'accept: application/json, text/plain, */*' -H 'origin: https://audius.co' -H 'user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36' -H 'content-type: application/json;charset=UTF-8' -H 'sec-fetch-site: same-site' -H 'sec-fetch-mode: cors' -H 'referer: " + link + "' -H 'accept-encoding: gzip, deflate, br' -H 'accept-language: en-US,en;q=0.9' --data-binary '{\"tracks\":[{\"id\":" + str(track_id) + ",\"url_title\":\""+ title + "\",\"handle\":\"" + account + "\"}]}' --compressed > dl.txt"
 os.system(curl_string)
@@ -63,11 +62,10 @@ with open("dl.txt") as f:
 	print("")
 
 os.chdir("dl")
-os.system("cat * | ffmpeg -y -i pipe: -c:a copy \"{}.m4a\" -loglevel panic".format(title, title))
-os.system("mv \"{}.m4a\" ../\"{}.m4a\"".format(title, title))
+os.system("cat * | ffmpeg -y -i pipe: -c:a copy \"{}.m4a\" -loglevel panic".format(track_id))
+os.system("mv \"{}.m4a\" ../\"{}.m4a\"".format(track_id, track_id))
 os.chdir("..")
 os.system("rm -rf dl/")
-os.system("mv \"{}.m4a\" \"{}.m4a\"".format(title, data['data'][0]['title']))
 os.system("rm dl.txt")
 
 # Get cover and set cover flag
@@ -85,7 +83,9 @@ except:
 	description = ""
 
 
-add_tags(data['data'][0]['title'], data['data'][0]['title'], get_artist_name(account), description, 1)
+add_tags(track_id, data['data'][0]['title'], get_artist_name(account), description, 1)
+
+os.system("mv \"{}.m4a\" \"{}.m4a\"".format(track_id, data['data'][0]['title']))
 
 try:
 	os.mkdir("Files")
