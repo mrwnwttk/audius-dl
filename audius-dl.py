@@ -1,17 +1,18 @@
-# sudo apt-get install python3-joblib
+import re
 import os
 import sys
 import json
-import shutil
 import urllib
-import urllib.parse
 import requests
-import subprocess
+import urllib.parse
 from joblib import Parallel, delayed
-from mutagen.mp3 import EasyMP3
 from mutagen.easyid3 import EasyID3
 from mutagen.mp4 import MP4, MP4Cover
 from mutagen.id3 import ID3, APIC, TIT2, TALB, TPE1, TPE2, COMM, USLT, TCOM, TCON, TDRC
+
+def fix_filename(filename):
+	return re.sub(r'[\/\*\<\?\>\|]', '-', filename)
+
 
 def get_artist_name(account):
 	username_json = requests.get("https://discoveryprovider3.audius.co/users?handle=" + account + "&limit=1&offset=0")
@@ -85,10 +86,11 @@ except:
 
 add_tags(track_id, data['data'][0]['title'], get_artist_name(account), description, 1)
 
-os.system("mv \"{}.m4a\" \"{}.m4a\"".format(track_id, data['data'][0]['title']))
+os.system("mv \"{}.m4a\" \"{}.m4a\"".format(track_id, fix_filename(data['data'][0]['title'])))
 
 try:
 	os.mkdir("Files")
 except:
 	pass
 os.system("mv *.m4a Files/")
+os.remove("cover.jpg")
