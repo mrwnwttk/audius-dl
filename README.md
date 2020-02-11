@@ -6,6 +6,7 @@ Linux / macOS only for now
 
 Install on Ubuntu:
 ```
+# Install FFmpeg
 $ sudo apt-get install python3-joblib
 $ python3 -m pip install --user mutagen
 $ python3 -m pip install --user requests
