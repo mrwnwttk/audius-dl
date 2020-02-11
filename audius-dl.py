@@ -70,9 +70,8 @@ os.system("rm -rf dl/")
 os.system("rm dl.txt")
 
 # Get cover and set cover flag
-cover_url = "https://ipfs.io/ipfs/" + data['data'][0]['cover_art_sizes'] + "/original.jpg"
 try: 
-	urllib.request.urlretrieve(cover_url, "cover.jpg")
+	urllib.request.urlretrieve("https://ipfs.io/ipfs/" + data['data'][0]['cover_art_sizes'] + "/1000x1000.jpg", "cover.jpg")
 	cover_flag = 1
 except:
 	cover_flag = 0
