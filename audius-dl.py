@@ -59,7 +59,7 @@ except:
 with open("dl.txt") as f:
 	data = json.loads(f.read())
 	print("Number of fragments: {}".format(len(data['data'][0]['track_segments'])))
-	Parallel(n_jobs=8)(delayed(download_fragment)(data,i) for i in range(len(data['data'][0]['track_segments'])))
+	Parallel(n_jobs=16)(delayed(download_fragment)(data,i) for i in range(len(data['data'][0]['track_segments'])))
 	print("")
 
 os.chdir("dl")
