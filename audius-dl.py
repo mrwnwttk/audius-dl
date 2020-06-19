@@ -37,7 +37,7 @@ def add_tags(filename, title, artist, description, cover_flag):
 def download_fragment(url, i):
 	print("\033[K", "Fragment: [{}/{}]".format(i, len(data['data'][0]['track_segments'])), "\r", end='')
 	sys.stdout.flush()
-	urllib.request.urlretrieve("https://ipfs.io/ipfs/" + data['data'][0]['track_segments'][i]['multihash'], "dl/" + "{:04d}".format(i))
+	urllib.request.urlretrieve("https://creatornode.audius.co/ipfs/" + data['data'][0]['track_segments'][i]['multihash'], "dl/" + "{:04d}".format(i))
 
 link = input("Please enter a link: ")
 
