@@ -244,17 +244,21 @@ def download_album(link):
 	for t in j['data'][0]['tracks']:
 		download_single_track_from_api(t['id'], album_name)
 
-if len(sys.argv) != 2:
-	link = input("Please enter a link: ")
-else:
-	link = sys.argv[1]
+def main():
+	if len(sys.argv) != 2:
+		link = input("Please enter a link: ")
+	else:
+		link = sys.argv[1]
 
-if '/album/' in link:
-	download_album(link)
-	exit()
+	if '/album/' in link:
+		download_album(link)
+		exit()
 
-elif '/playlist/' in link:
-	download_album(link)
-	exit()
-else:
-	download_single_track_from_permalink(link)
+	elif '/playlist/' in link:
+		download_album(link)
+		exit()
+	else:
+		download_single_track_from_permalink(link)
+
+if __name__ == '__main__':
+		main()
