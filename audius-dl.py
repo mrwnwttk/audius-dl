@@ -11,10 +11,7 @@ import subprocess
 
 import multiprocessing
 
-base_path = os.getcwd()
 
-manager = multiprocessing.Manager()
-segments_arr = manager.list([None])
 
 
 def fix_filename(filename):
@@ -239,4 +236,8 @@ def main():
 		download_single_track_from_permalink(link)
 
 if __name__ == '__main__':
-		main()
+	base_path = os.getcwd()
+
+	manager = multiprocessing.Manager()
+	segments_arr = manager.list([None])
+	main()
