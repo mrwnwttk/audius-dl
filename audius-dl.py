@@ -15,7 +15,7 @@ import multiprocessing
 
 
 def fix_filename(filename):
-	return re.sub(r'[\/\*\<\?\>\|]', '-', filename)
+	return re.sub(r'[\/\*\<\?\>\|\<\>]', '-', filename)
 
 def add_tags(filename, title, artist, description, cover):
 		tags = MP4(filename + ".m4a").tags
@@ -113,6 +113,7 @@ def download_single_track_from_permalink(link, folder_name=''):
 	os.chdir('Files')
 
 	if folder_name != '':
+		folder_name = fix_filename(folder_name)
 		try:
 			os.mkdir(folder_name)
 		except:
@@ -171,6 +172,7 @@ def download_single_track_from_api(track_id, folder_name=''):
 	os.chdir('Files')
 
 	if folder_name != '':
+		folder_name = fix_filename(folder_name)
 		try:
 			os.mkdir(folder_name)
 		except:
