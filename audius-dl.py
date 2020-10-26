@@ -44,23 +44,12 @@ def download_fragment(data, i, endpoint):
 	global segments_arr
 	print("\033[K", "Fragment: [{}/{}]".format(i + 1, len(data['data'][0]['track_segments'])), "\r", end='')
 	sys.stdout.flush()
-	# for e in endpoints:	
-	# 	data = requests.get(f"{e}/ipfs/" + data['data'][0]['track_segments'][i]['multihash'])
-	# 	if not (data.text)[0] == '{':
-	# 		segments_arr[i] = data.content
-	# 		break
 	segments_arr[i] = requests.get(f"{endpoint}/ipfs/" + data['data'][0]['track_segments'][i]['multihash']).content
 
 def download_fragment_api(data, i, endpoint):
 	global segments_arr
 	print("\033[K", "Fragment: [{}/{}]".format(i + 1, len(data['data']['track_segments'])), "\r", end='')
 	sys.stdout.flush()
-	#for e in endpoints:	
-		#data = requests.get(f"{e}/ipfs/" + data['data']['track_segments'][i]['multihash']).content
-		#print(data.text)
-		#if not (data.text)[0] == '{':
-		#	segments_arr[i] = data.content
-		#	break
 	segments_arr[i] = requests.get(f"{endpoint}/ipfs/" + data['data']['track_segments'][i]['multihash']).content
 
 
