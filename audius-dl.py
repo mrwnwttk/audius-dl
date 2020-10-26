@@ -52,7 +52,6 @@ def download_fragment_api(data, i, endpoint):
 	sys.stdout.flush()
 	segments_arr[i] = requests.get(f"{endpoint}/ipfs/" + data['data']['track_segments'][i]['multihash']).content
 
-
 def get_node_endpoint(track_id, endpoint):
 	r = requests.get(f"{endpoint}/v1/full/tracks/{track_id}")
 	j = json.loads(r.text)
@@ -124,7 +123,6 @@ def download_single_track_from_permalink(link, folder_name=''):
 
 	cover_flag = 1
 
-	# Get cover and set cover flag
 	if node_json['data']['artwork'] is None:
 		cover_flag = 0
 
@@ -135,7 +133,6 @@ def download_single_track_from_permalink(link, folder_name=''):
 		except:
 			cover_flag = 0
 
-	# Get description
 	try:
 		description = data['data'][0]['description']
 	except:
@@ -143,7 +140,6 @@ def download_single_track_from_permalink(link, folder_name=''):
 
 	add_tags(track_id, data['data'][0]['title'], get_artist_name(account, endpoint), description, cover_flag)
 
-	#os.system("mv \"{}.m4a\" \"{}.m4a\"".format(track_id, fix_filename(data['data'][0]['title'])))
 	shutil.move(f"{track_id}.m4a", f"{fix_filename(data['data'][0]['title'])}.m4a")
 	if cover_flag == 1:
 		os.remove("cover.jpg")
@@ -200,7 +196,6 @@ def download_single_track_from_api(track_id, folder_name=''):
 	if data['data']['artwork'] is None:
 		cover_flag = 0
 
-	# Get cover and set cover flag
 	if cover_flag == 1:
 		try: 
 			urllib.request.urlretrieve(data['data']['artwork']['1000x1000'], "cover.jpg")
@@ -210,7 +205,6 @@ def download_single_track_from_api(track_id, folder_name=''):
 
 
 
-	# Get description
 	try:
 		description = data['data']['description']
 	except:
