@@ -1,15 +1,12 @@
 import re
 import os
-import io
 import sys
 import json
 import requests
 import urllib.parse
 import shutil
 from joblib import Parallel, delayed
-from mutagen.easyid3 import EasyID3
 from mutagen.mp4 import MP4, MP4Cover
-from mutagen.id3 import ID3, APIC, TIT2, TALB, TPE1, TPE2, COMM, USLT, TCOM, TCON, TDRC
 import subprocess
 
 import multiprocessing
