@@ -25,7 +25,7 @@ def get_artist_name(account, endpoint):
 	username_json = json.loads(username_json.content)
 	return username_json['data'][0]['name']
 
-def add_tags(filename, title, artist, description, cover_flag):
+def add_tags(filename, title, artist, description, cover):
 		tags = MP4(filename + ".m4a").tags
 		if description != None:
 			tags["desc"] = description
@@ -33,11 +33,10 @@ def add_tags(filename, title, artist, description, cover_flag):
 		tags["\xa9alb"] = "Audius"
 		tags["\xa9ART"] = artist
 
-		if cover_flag == 1:
-			with open("cover.jpg", "rb") as f:
-				tags["covr"] = [
-					MP4Cover(f.read(), imageformat=MP4Cover.FORMAT_JPEG)
-				]
+		if cover is not None:
+			tags["covr"] = [
+				MP4Cover(cover[:], imageformat=MP4Cover.FORMAT_JPEG)
+			]
 		tags.save(filename + ".m4a")
 
 def download_fragment(data, i, endpoint):
@@ -121,18 +120,15 @@ def download_single_track_from_permalink(link, folder_name=''):
 
 	print(grep_stdout.decode())
 
-	cover_flag = 1
 
+	cover = None
 	if node_json['data']['artwork'] is None:
-		cover_flag = 0
-
-	if cover_flag == 1:
-		try: 
-			urllib.request.urlretrieve(node_json['data']['artwork']['1000x1000'], "cover.jpg")
-			cover_flag = 1
+		cover = None
+	else:
+		try:
+			cover = requests.get(node_json['data']['artwork']['1000x1000']).content
 		except:
-			cover_flag = 0
-
+			cover = None
 	try:
 		description = data['data'][0]['description']
 	except:
@@ -140,10 +136,8 @@ def download_single_track_from_permalink(link, folder_name=''):
 
 	add_tags(track_id, data['data'][0]['title'], get_artist_name(account, endpoint), description, cover_flag)
 
+	add_tags(track_id, data['data'][0]['title'], node_json['data']['user']['name'], description, cover)
 	shutil.move(f"{track_id}.m4a", f"{fix_filename(data['data'][0]['title'])}.m4a")
-	if cover_flag == 1:
-		os.remove("cover.jpg")
-
 	print("Done!")
 
 def download_single_track_from_api(track_id, folder_name=''):
@@ -190,19 +184,14 @@ def download_single_track_from_api(track_id, folder_name=''):
 	print(grep_stdout.decode())
 
 
-	cover_flag = 1
-
+	cover = None
 	if data['data']['artwork'] is None:
-		cover_flag = 0
-
-	if cover_flag == 1:
-		try: 
-			urllib.request.urlretrieve(data['data']['artwork']['1000x1000'], "cover.jpg")
-			cover_flag = 1
+		cover = None
+	else:
+		try:
+			cover = requests.get(data['data']['artwork']['1000x1000']).content
 		except:
-			cover_flag = 0
-
-
+			cover = None
 
 	try:
 		description = data['data']['description']
@@ -212,10 +201,8 @@ def download_single_track_from_api(track_id, folder_name=''):
 	add_tags(track_id, data['data']['title'], data['data']['user']['name'], description, cover_flag)
 
 	#os.system("mv \"{}.m4a\" \"{}.m4a\"".format(track_id, fix_filename(data['data'][0]['title'])))
+	add_tags(track_id, data['data']['title'], data['data']['user']['name'], description, cover)
 	shutil.move(f"{track_id}.m4a", f"{fix_filename(data['data']['title'])}.m4a")
-	if cover_flag == 1:
-		os.remove("cover.jpg")
-
 	print("Done!")
 
 def resolve_link(link, endpoint):
