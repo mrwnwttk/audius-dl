@@ -63,12 +63,14 @@ def resolve_link(link, endpoint):
 		r = requests.get(f"{endpoint}/v1/resolve?url={link}")
 		if r.status_code == 200:
 			return r.text
+		elif r.status_code == 404:
+			print("Returned 404, can't download!")
+			exit()
 		else:
 			time.sleep(2)
 
 def get_permalink_for_track(id):
 	r = requests.get(f'https://audius.co/tracks/{id}')
-	print(r.text)
 	return r.url
 
 def get_info_from_permalink(link):
@@ -105,6 +107,7 @@ def download_single_track_from_permalink(link, folder_name=''):
 
 	r = resolve_link(link, endpoint)
 	node_json = json.loads(r)
+
 	node_endpoints = get_node_endpoint(node_json['data']['id'],endpoint)
 	print(f"Node endpoints: {' / '.join(node_endpoints)}")
 	selected_node_endpoint = node_endpoints[0]
