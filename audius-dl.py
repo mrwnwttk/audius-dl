@@ -2,6 +2,7 @@ import re
 import os
 import sys
 import json
+import time
 import requests
 import urllib.parse
 import shutil
@@ -44,10 +45,13 @@ def download_fragment_api(data, i, endpoint):
 	segments_arr[i] = requests.get(f"{endpoint}/ipfs/" + data['data']['track_segments'][i]['multihash']).content
 
 def get_node_endpoint(track_id, endpoint):
-	r = requests.get(f"{endpoint}/v1/full/tracks/{track_id}")
-	j = json.loads(r.text)
-	endpoints = (j['data']['user']['creator_node_endpoint']).split(',')
-	return endpoints
+	while(True):
+		r = requests.get(f"{endpoint}/v1/full/tracks/{track_id}")
+		if r.status_code == 200:
+			j = json.loads(r.text)
+			endpoints = (j['data']['user']['creator_node_endpoint']).split(',')
+			return endpoints
+		time.sleep(2)
 
 def get_available_endpoint():
 	r = requests.get('https://api.audius.co')
@@ -55,7 +59,12 @@ def get_available_endpoint():
 	return j['data'][0]
 
 def resolve_link(link, endpoint):
-	return requests.get(f"{endpoint}/v1/resolve?url={link}").text
+	while True:
+		r = requests.get(f"{endpoint}/v1/resolve?url={link}")
+		if r.status_code == 200:
+			return r.text
+		else:
+			time.sleep(2)
 
 def get_permalink_for_track(id):
 	r = requests.get(f'https://audius.co/tracks/{id}')
