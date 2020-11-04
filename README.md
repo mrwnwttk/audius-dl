@@ -2,14 +2,12 @@
 Downloader for Audius
 
 ## Installation
-Linux / macOS only for now
-
-Install on Ubuntu:
+In this case the Python 3 instance is named `python3`. Here's an example using Ubuntu:
 ```
 # Install FFmpeg
-$ sudo apt-get install python3-joblib
-$ python3 -m pip install --user mutagen
-$ python3 -m pip install --user requests
+$ sudo apt-get install ffmpeg
+# Install required python modules
+$ python3 -m pip install joblib mutagen requests
 ```
 
 ## Usage
