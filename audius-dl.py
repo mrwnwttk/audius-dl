@@ -247,6 +247,25 @@ def download_album(link):
 		print(f"Track [ {index + 1} / {len(j['data'][0]['tracks'])} ]")
 		download_single_track_from_api(t['id'], album_name)
 
+def download_profile(link):
+	endpoint = get_available_endpoint()
+	print(f"API endpoint: {endpoint}")
+
+	res = resolve_link(link, endpoint)
+	j = json.loads(res)
+	user_id = j['data']['id']
+	username = j['data']['handle']
+
+	r = requests.get(f"{endpoint}/v1/users/{user_id}/tracks")
+	#print(r.text)
+
+	j = json.loads(r.text)
+	
+	for index, i in enumerate(j['data']):
+		print(f"Track [ {index + 1} / {len(j['data'])} ]")
+		download_single_track_from_api(i['id'], username)
+
+
 def main():
 	if len(sys.argv) != 2:
 		link = input("Please enter a link: ")
@@ -260,8 +279,19 @@ def main():
 	elif '/playlist/' in link:
 		download_album(link)
 		exit()
-	else:
+
+	if link[-1] == '/':
+		link = link[:-1]
+
+	if link.split('audius.co')[1].count('/') == 1:
+		download_profile(link)
+		exit()
+
+	elif link.split('audius.co')[1].count('/') == 2:
 		download_single_track_from_permalink(link)
+		exit()
+
+
 
 if __name__ == '__main__':
 	base_path = os.getcwd()
