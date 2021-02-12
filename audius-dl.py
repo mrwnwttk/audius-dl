@@ -60,7 +60,13 @@ def get_available_endpoint():
 
 def resolve_link(link, endpoint):
 	while True:
-		r = requests.get(f"{endpoint}/v1/resolve?url={link}")
+		headers = {
+			'Accept': 'text/plain'
+		}
+		if link[-1] == '/':
+			link = link[:-1]
+		r = requests.get(f'{endpoint}/v1/resolve', params = { 'url': link }, headers = headers)
+
 		if r.status_code == 200:
 			return r.text
 		elif r.status_code == 404:
