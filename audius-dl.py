@@ -170,7 +170,15 @@ def download_single_track_from_api(track_id, folder_name=''):
 	r = requests.get(f"{endpoint}/v1/full/tracks/" + track_id)
 	data = json.loads(r.text)
 
-	node_endpoints = get_node_endpoint(data['data']['id'], endpoint)
+	while(True):
+		try:
+			node_endpoints = get_node_endpoint(data['data']['id'], endpoint)
+			break
+		except:
+			print("Failed to get endpoint! Trying again in five seconds!")
+			time.sleep(5)
+		
+
 	print(f"Node endpoints: {' / '.join(node_endpoints)}")
 	selected_node_endpoint = node_endpoints[0]
 	print(f"Selected node endpoint: {selected_node_endpoint}")
