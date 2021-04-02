@@ -54,9 +54,14 @@ def get_node_endpoint(track_id, endpoint):
 		time.sleep(2)
 
 def get_available_endpoint():
-	r = requests.get('https://api.audius.co')
-	j = json.loads(r.text)
-	return j['data'][0]
+	while(True):
+		try:
+			r = requests.get('https://api.audius.co')
+			j = json.loads(r.text)
+			return j['data'][0]
+		except:
+			print("Error occurred while contacting api.audius.co! Trying again in two seconds...")
+			time.sleep(2)
 
 def resolve_link(link, endpoint):
 	while True:
