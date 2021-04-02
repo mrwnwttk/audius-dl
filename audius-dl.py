@@ -32,15 +32,15 @@ def add_tags(filename, title, artist, description, cover):
 			]
 		tags.save(filename + ".m4a")
 
-def download_fragment(data, i, endpoint):
+def download_segment(data, i, endpoint):
 	global segments_arr
-	print("\033[K", "Fragment: [{}/{}]".format(i + 1, len(data['data'][0]['track_segments'])), "\r", end='')
+	print("\033[K", "Segment: [{}/{}]".format(i + 1, len(data['data'][0]['track_segments'])), "\r", end='')
 	sys.stdout.flush()
 	segments_arr[i] = requests.get(f"{endpoint}/ipfs/" + data['data'][0]['track_segments'][i]['multihash']).content
 
-def download_fragment_api(data, i, endpoint):
+def download_segment_api(data, i, endpoint):
 	global segments_arr
-	print("\033[K", "Fragment: [{}/{}]".format(i + 1, len(data['data']['track_segments'])), "\r", end='')
+	print("\033[K", "Segment: [{}/{}]".format(i + 1, len(data['data']['track_segments'])), "\r", end='')
 	sys.stdout.flush()
 	segments_arr[i] = requests.get(f"{endpoint}/ipfs/" + data['data']['track_segments'][i]['multihash']).content
 
@@ -124,7 +124,7 @@ def download_single_track_from_permalink(link, folder_name=''):
 	selected_node_endpoint = node_endpoints[0]
 	print(f"Selected node endpoint: {selected_node_endpoint}")
 
-	Parallel(n_jobs=8)(delayed(download_fragment)(data,i, selected_node_endpoint) for i in range(len(data['data'][0]['track_segments'])))
+	Parallel(n_jobs=8)(delayed(download_segment)(data,i, selected_node_endpoint) for i in range(len(data['data'][0]['track_segments'])))
 	all_seg = b''.join(segments_arr)
 
 	global base_path
@@ -191,7 +191,7 @@ def download_single_track_from_api(track_id, folder_name=''):
 	print("Number of segments: {}".format(len(data['data']['track_segments'])))
 	segments_arr = manager.list([None] * len(data['data']['track_segments']))
 
-	Parallel(n_jobs=8)(delayed(download_fragment_api)(data, i, selected_node_endpoint) for i in range(len(data['data']['track_segments'])))
+	Parallel(n_jobs=8)(delayed(download_segment_api)(data, i, selected_node_endpoint) for i in range(len(data['data']['track_segments'])))
 	all_seg = b''.join(segments_arr)
 
 	global base_path
