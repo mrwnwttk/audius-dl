@@ -15,6 +15,14 @@ from mutagen.mp4 import MP4, MP4Cover
 def fix_filename(filename):
 	return re.sub(r'[\/\*\<\?\>\|\<\>]', '-', filename)
 
+def uniquify(path):
+    filename, extension = os.path.splitext(path)
+    counter = 1
+    while os.path.exists(path):
+        path = filename + " (" + str(counter) + ")" + extension
+        counter += 1
+    return path
+
 def add_tags(filename, title, artist, description, cover):
 		tags = MP4(filename + ".m4a").tags
 		if description != None:
@@ -229,7 +237,7 @@ def download_single_track_from_api(track_id, folder_name=''):
 		description = None
 
 	add_tags(track_id, data['data']['title'], data['data']['user']['name'], description, cover)
-	shutil.move(f"{track_id}.m4a", f"{fix_filename(data['data']['title'])}.m4a")
+	shutil.move(f"{track_id}.m4a", uniquify(f"{fix_filename(data['data']['title'])}.m4a"))
 	print("Done!")
 
 def download_album(link):
