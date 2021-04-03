@@ -266,8 +266,29 @@ def download_profile(link):
 	user_id = j['data']['id']
 	username = j['data']['handle']
 
-	r = requests.get(f"{endpoint}/v1/users/{user_id}/tracks")
-	#print(r.text)
+	# Get user info and number of tracks for said user
+	user_track_count = j['data']['track_count']
+	print(f"Total number of tracks: {user_track_count}")
+	tracks = []
+
+	# We only need to make a single request
+	if user_track_count < 100:
+		r = requests.get(f"{endpoint}/v1/users/{user_id}/tracks")
+		j = json.loads(r.text)
+		for t in j['data']:
+			tracks.append(t['id'])	
+	else:
+		for offset in range(0, user_track_count, 100):
+			r = requests.get(f"{endpoint}/v1/users/{user_id}/tracks?offset={offset}")
+			j = json.loads(r.text)
+			for t in j['data']:
+				tracks.append(t['id'])
+
+	print(f"Found {len(tracks)} track(s)!")
+
+	for index, i in enumerate(tracks):
+		print(f"Track [ {index + 1} / {len(tracks)} ]")
+		download_single_track_from_api(i, username)
 
 	j = json.loads(r.text)
 	
