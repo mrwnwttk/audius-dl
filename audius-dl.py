@@ -49,6 +49,13 @@ def download_segment_api(data, i, endpoint):
 	sys.stdout.flush()
 	segments_arr[i] = requests.get(f"{endpoint}/ipfs/" + data['data']['track_segments'][i]['multihash']).content
 
+def download_deleted_segment(data, i, endpoint):
+	global segments_arr
+	print("\033[K", "Segment: [{}/{}]".format(i + 1, len(data['track_segments'])), "\r", end='')
+	sys.stdout.flush()
+	segments_arr[i] = requests.get(f"{endpoint}/ipfs/" + data['track_segments'][i]['multihash']).content
+
+
 def get_node_endpoint(track_id, endpoint):
 	while(True):
 		r = requests.get(f"{endpoint}/v1/full/tracks/{track_id}")
@@ -240,6 +247,71 @@ def download_single_track_from_api(track_id, folder_name=''):
 	shutil.move(f"{track_id}.m4a", uniquify(f"{fix_filename(data['data']['title'])}.m4a"))
 	print("Done!")
 
+def download_deleted_track(track_json, folder_name='', full_username=''):
+	global segments_arr
+
+	endpoint = get_available_endpoint()
+	print(f"API endpoint: {endpoint}")
+
+	# TODO: Provide API with list of all known creator nodes
+	# Guess a working node endpoint which still has the segments of the track
+	node_endpoint_list = ['https://creatornode.audius.co', 'https://creatornode2.audius.co', 'https://audius-content.nz.modulational.com']
+	selected_node_endpoint = ""
+	for n in node_endpoint_list:
+		r = requests.get(f'{n}/ipfs/' + track_json['track_segments'][0]['multihash'])
+		if r.status_code == 200:
+			selected_node_endpoint = n
+			break
+
+	if selected_node_endpoint != "":
+		print("Number of segments: {}".format(len(track_json['track_segments'])))
+		segments_arr = manager.list([None] * len(track_json['track_segments']))
+
+		Parallel(n_jobs=8)(delayed(download_deleted_segment)(track_json, i, selected_node_endpoint) for i in range(len(track_json['track_segments'])))
+		all_seg = b''.join(segments_arr)
+
+		global base_path
+		os.chdir(base_path)
+		try:
+			os.mkdir("Files")
+		except:
+			pass
+		os.chdir('Files')
+
+		if folder_name != '':
+			folder_name = fix_filename(folder_name)
+			try:
+				os.mkdir(folder_name)
+			except:
+				pass
+			os.chdir(folder_name)
+
+		track_id = str(track_json['track_id'])
+		p = subprocess.Popen(["ffmpeg", "-loglevel", "panic", "-stats", "-y", "-i", "pipe:", "-c:a", "copy", f"{track_id}.m4a"], stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.STDOUT)
+		grep_stdout = p.communicate(input=all_seg)[0]
+
+		print("\n" + (grep_stdout.decode()).rstrip())
+
+
+		cover = None
+		if track_json['cover_art'] is None:
+			cover = None
+		else:
+			try:
+				cover = requests.get(track_json['artwork']['1000x1000']).content
+			except:
+				cover = None
+
+		try:
+			description = track_json['description']
+		except:
+			description = None
+
+		print(track_json['title'])
+		add_tags(track_id, track_json['title'], full_username, description, cover)
+		shutil.move(f"{track_id}.m4a", uniquify(f"{fix_filename(track_json['title'])}.m4a"))
+		print("Done!")
+
 def download_album(link):
 	endpoint = get_available_endpoint()
 	print(f"API endpoint: {endpoint}")
@@ -290,15 +362,40 @@ def download_profile(link):
 		print(f"Track [ {index + 1} / {len(tracks)} ]")
 		download_single_track_from_api(i, username)
 
-	j = json.loads(r.text)
-	
-	for index, i in enumerate(j['data']):
-		print(f"Track [ {index + 1} / {len(j['data'])} ]")
-		download_single_track_from_api(i['id'], username)
+def download_profile_deleted_tracks(link):
+	endpoint = get_available_endpoint()
+	print(f"API endpoint: {endpoint}")
 
+	res = resolve_link(link, endpoint)
+	j = json.loads(res)
+	user_id = j['data']['id']
+	username = j['data']['handle']
+	full_username = j['data']['name']
+
+	# We want to be able to use the API to include deleted tracks, which means we can't use the User ID
+	# provided by Audius, instead we have to get a little creative.
+
+	# Get *actual* User ID
+	# Uses https://hashids.org/python/
+	# See https://audius.co/static/js/utils/route/hashIds.ts
+	hashids = Hashids(salt="azowernasdfoia", min_length=5)
+	actual_user_id = hashids.decode(user_id)[0]
+	r = requests.get(f"{endpoint}/tracks?filter_deleted=false&limit=100&offset=0&user_id={actual_user_id}")
+	j = json.loads(r.text)
+
+	deleted_tracks = []
+
+	for t in j['data']:
+		if(t['is_delete']):
+			deleted_tracks.append(t)
+	print(f"Number of deleted tracks: {len(deleted_tracks)}")
+
+	for index, i in enumerate(deleted_tracks):
+		print(f"Track [ {index + 1} / {len(deleted_tracks)} ]")
+		download_deleted_track(i, username, full_username)
 
 def main():
-	if len(sys.argv) != 2:
+	if len(sys.argv) < 2:
 		link = input("Please enter a link: ")
 	else:
 		link = sys.argv[1]
@@ -315,7 +412,10 @@ def main():
 		link = link[:-1]
 
 	if link.split('audius.co')[1].count('/') == 1:
-		download_profile(link)
+		if '--deleted' in sys.argv:
+			download_profile_deleted_tracks(link)
+		else:
+			download_profile(link)
 		exit()
 
 	elif link.split('audius.co')[1].count('/') == 2:
