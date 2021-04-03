@@ -8,6 +8,7 @@ import requests
 import subprocess
 import urllib.parse
 import multiprocessing
+from hashids import Hashids
 from joblib import Parallel, delayed
 from mutagen.mp4 import MP4, MP4Cover
 
