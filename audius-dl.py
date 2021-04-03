@@ -3,17 +3,13 @@ import os
 import sys
 import json
 import time
-import requests
-import urllib.parse
 import shutil
+import requests
+import subprocess
+import urllib.parse
+import multiprocessing
 from joblib import Parallel, delayed
 from mutagen.mp4 import MP4, MP4Cover
-import subprocess
-
-import multiprocessing
-
-
-
 
 def fix_filename(filename):
 	return re.sub(r'[\/\*\<\?\>\|\<\>]', '-', filename)
