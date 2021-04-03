@@ -77,21 +77,24 @@ def get_available_endpoint():
 
 def resolve_link(link, endpoint):
 	while True:
-		headers = {
-			'Accept': 'text/plain'
-		}
-		if link[-1] == '/':
-			link = link[:-1]
-		r = requests.get(f'{endpoint}/v1/resolve', params = { 'url': link }, headers = headers)
+		try:
+			headers = {
+				'Accept': 'text/plain'
+			}
+			if link[-1] == '/':
+				link = link[:-1]
+			r = requests.get(f'{endpoint}/v1/resolve', params = { 'url': link }, headers = headers)
 
-		if r.status_code == 200:
-			return r.text
-		elif r.status_code == 404:
-			print("Returned 404, can't download!")
-			exit()
-		else:
+			if r.status_code == 200:
+				return r.text
+			elif r.status_code == 404:
+				print("Returned 404, can't download!")
+				exit()
+			else:
+				time.sleep(2)
+		except:
+			print("An exception occurred while trying to resolve the link, trying again in two seconds...")
 			time.sleep(2)
-
 def get_permalink_for_track(id):
 	r = requests.get(f'https://audius.co/tracks/{id}')
 	return r.url
