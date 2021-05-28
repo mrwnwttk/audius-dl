@@ -110,6 +110,25 @@ def get_info_from_permalink(link):
 	title = urllib.parse.quote(title)
 	return track_id, title, account
 
+def select_endpoint(node_endpoints, data):
+	print("Checking for available enpoints...")
+
+	working_enpoint_found = False
+
+	for index, e in enumerate(node_endpoints):
+		print(f"{e} - ", end='')
+		if "error" in requests.get(f"{e}/ipfs/" + data['data'][0]['track_segments'][0]['multihash']).text:
+			print("Failed!")
+		else:
+			print("Success!")
+			working_enpoint_found = True
+			break
+
+	if working_enpoint_found:
+		return index
+	else:
+		return -1
+
 def download_single_track_from_permalink(link, folder_name=''):
 	global segments_arr
 	track_id, title, account = get_info_from_permalink(link)
@@ -136,7 +155,15 @@ def download_single_track_from_permalink(link, folder_name=''):
 
 	node_endpoints = get_node_endpoint(node_json['data']['id'],endpoint)
 	print(f"Node endpoints: {' / '.join(node_endpoints)}")
-	selected_node_endpoint = node_endpoints[0]
+
+	# Check if the node has not blacklisted the files
+	ret = select_endpoint(node_endpoints, data)
+
+	if ret == -1:
+		print("Not a single working endpoint found! Exiting...")
+		exit()
+
+	selected_node_endpoint = node_endpoints[ret]
 	print(f"Selected node endpoint: {selected_node_endpoint}")
 
 	Parallel(n_jobs=8)(delayed(download_segment)(data,i, selected_node_endpoint) for i in range(len(data['data'][0]['track_segments'])))
