@@ -102,13 +102,12 @@ def get_permalink_for_track(id):
 def get_info_from_permalink(link):
 	link_array = link.split("/")
 	account = link_array[3]
-	track_id = (link_array[4].split("-"))[-1]
+	# track_id = (link_array[4].split("-"))[-1]
 
 	title = urllib.parse.unquote(link_array[4])
-	title = title [:-(len(track_id) + 1)]
 	title = title.replace('"', '\"')
 	title = urllib.parse.quote(title)
-	return track_id, title, account
+	return title, account
 
 def select_endpoint(node_endpoints, data):
 	print("Checking for available enpoints...")
@@ -131,10 +130,19 @@ def select_endpoint(node_endpoints, data):
 
 def download_single_track_from_permalink(link, folder_name=''):
 	global segments_arr
-	track_id, title, account = get_info_from_permalink(link)
+	title, account = get_info_from_permalink(link)
 
 	endpoint = get_available_endpoint()
 	print(f"API endpoint: {endpoint}")
+
+	# get track id
+	u = endpoint + f"/v1/full/tracks?handle={account}&slug={title}"
+	r = requests.get(endpoint + f"/v1/full/tracks?handle={account}&slug={title}").json()
+	track_id = r["data"]["id"]
+
+	hashids = Hashids(salt="azowernasdfoia", min_length=5)
+	# actual track id
+	track_id = str(hashids.decode(track_id)[0])
 
 	headers = {
 		'content-type': 'application/json;charset=UTF-8',
