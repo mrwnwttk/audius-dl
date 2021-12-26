@@ -94,6 +94,7 @@ def resolve_link(link, endpoint):
 		except:
 			print("An exception occurred while trying to resolve the link, trying again in two seconds...")
 			time.sleep(2)
+
 def get_permalink_for_track(id):
 	r = requests.get(f'https://audius.co/tracks/{id}')
 	return r.url
@@ -355,7 +356,12 @@ def download_album(link):
 
 	res = resolve_link(link, endpoint)
 	j = json.loads(res)
-	user_id = j['data'][0]['user']['id']
+	try:
+		# Catch specifically-crafted inputs
+		user_id = j["data"][0]["user"]["id"]
+	except:
+		print("Enter a valid URL.")
+		exit()
 	album_id = j['data'][0]['id']
 	album_name = j['data'][0]['playlist_name']
 
