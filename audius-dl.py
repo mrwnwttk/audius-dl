@@ -81,8 +81,7 @@ def resolve_link(link, endpoint):
 			headers = {
 				'Accept': 'text/plain'
 			}
-			if link[-1] == '/':
-				link = link[:-1]
+			
 			r = requests.get(f'{endpoint}/v1/resolve', params = { 'url': link }, headers = headers)
 
 			if r.status_code == 200:
@@ -437,17 +436,13 @@ def main():
 		link = input("Please enter a link: ")
 	else:
 		link = sys.argv[1]
-
-	if '/album/' in link:
-		download_album(link)
-		exit()
-
-	elif '/playlist/' in link:
-		download_album(link)
-		exit()
-
+	
 	if link[-1] == '/':
 		link = link[:-1]
+
+	if any(s in link for s in ('/album/', '/playlist/')):
+		download_album(link)
+		exit()
 
 	if link.split('audius.co')[1].count('/') == 1:
 		if '--deleted' in sys.argv:
@@ -455,12 +450,9 @@ def main():
 		else:
 			download_profile(link)
 		exit()
-
-	elif link.split('audius.co')[1].count('/') == 2:
+	else:
 		download_single_track_from_permalink(link)
 		exit()
-
-
 
 if __name__ == '__main__':
 	base_path = os.getcwd()
