@@ -1,11 +1,10 @@
-"""Implements the hashids algorithm in python. For more information, visit
-http://www.hashids.org/. Compatible with Python 2.6, 2.7 and 3"""
+"""Implements the hashids algorithm in python. For more information, visit http://hashids.org/"""
 
 import warnings
 from functools import wraps
 from math import ceil
 
-__version__ = '1.1.0'
+__version__ = '1.3.1'
 
 RATIO_SEPARATORS = 3.5
 RATIO_GUARDS = 12
@@ -55,12 +54,11 @@ def _hash(number, alphabet):
 def _unhash(hashed, alphabet):
     """Restores a number tuple from hashed using the given `alphabet` index."""
     number = 0
-    len_hash = len(hashed)
     len_alphabet = len(alphabet)
-    for i, character in enumerate(hashed):
+    for character in hashed:
         position = alphabet.index(character)
-        number += position * len_alphabet ** (len_hash - i - 1)
-
+        number *= len_alphabet
+        number += position
     return number
 
 
@@ -68,23 +66,16 @@ def _reorder(string, salt):
     """Reorders `string` according to `salt`."""
     len_salt = len(salt)
 
-    if len_salt == 0:
-        return string
-
-    i, index, integer_sum = len(string) - 1, 0, 0
-    while i > 0:
-        index %= len_salt
-        integer = ord(salt[index])
-        integer_sum += integer
-        j = (integer + index + integer_sum) % i
-
-        temp = string[j]
-        trailer = string[j+1:] if j + 1 < len(string) else ''
-        string = string[0:j] + string[i] + trailer
-        string = string[0:i] + temp + string[i+1:]
-
-        i -= 1
-        index += 1
+    if len_salt != 0:
+        string = list(string)
+        index, integer_sum = 0, 0
+        for i in range(len(string) - 1, 0, -1):
+            integer = ord(salt[index])
+            integer_sum += integer
+            j = (integer + index + integer_sum) % i
+            string[i], string[j] = string[j], string[i]
+            index = (index + 1) % len_salt
+        string = ''.join(string)
 
     return string
 
@@ -124,7 +115,6 @@ def _encode(values, salt, min_length, alphabet, separators, guards):
     values_hash = sum(x % (i + 100) for i, x in enumerate(values))
     encoded = lottery = alphabet[values_hash % len(alphabet)]
 
-    last = None
     for i, value in enumerate(values):
         alphabet_salt = (lottery + salt + alphabet)[:len_alphabet]
         alphabet = _reorder(alphabet, alphabet_salt)
@@ -158,14 +148,14 @@ def _decode(hashid, salt, alphabet, separators, guards):
         yield _unhash(part, alphabet)
 
 
-def _deprecated(func):
+def _deprecated(func, name):
     """A decorator that warns about deprecation when the passed-in function is
     invoked."""
     @wraps(func)
     def with_warning(*args, **kwargs):
         warnings.warn(
             ('The %s method is deprecated and will be removed in v2.*.*' %
-             func.__name__),
+             name),
             DeprecationWarning
         )
         return func(*args, **kwargs)
@@ -199,14 +189,12 @@ class Hashids(object):
         separators = _reorder(separators, salt)
 
         min_separators = _index_from_ratio(len_alphabet, RATIO_SEPARATORS)
-        if not separators or len_separators < min_separators:
-            if min_separators == 1:
-                min_separators = 2
-            if min_separators > len_separators:
-                split_at = min_separators - len_separators
-                separators += alphabet[:split_at]
-                alphabet = alphabet[split_at:]
-                len_alphabet = len(alphabet)
+
+        number_of_missing_separators = min_separators - len_separators
+        if number_of_missing_separators > 0:
+            separators += alphabet[:number_of_missing_separators]
+            alphabet = alphabet[number_of_missing_separators:]
+            len_alphabet = len(alphabet)
 
         alphabet = _reorder(alphabet, salt)
         num_guards = _index_from_ratio(len_alphabet, RATIO_GUARDS)
@@ -222,8 +210,8 @@ class Hashids(object):
         self._separators = separators
 
         # Support old API
-        self.decrypt = _deprecated(self.decode)
-        self.encrypt = _deprecated(self.encode)
+        self.decrypt = _deprecated(self.decode, "decrypt")
+        self.encrypt = _deprecated(self.encode, "encrypt")
 
     def encode(self, *values):
         """Builds a hash from the passed `values`.
