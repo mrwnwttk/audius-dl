@@ -13,7 +13,7 @@ from joblib import Parallel, delayed
 from mutagen.mp4 import MP4, MP4Cover
 
 def fix_filename(filename):
-	return re.sub(r'[\/\*\<\?\>\|\<\>\:]', '-', filename)
+	return re.sub(r'[\/\*\<\?\>\|\<\>\:\"]', '-', filename)
 
 def uniquify(path):
     filename, extension = os.path.splitext(path)
