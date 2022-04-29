@@ -158,6 +158,7 @@ def download_single_track_from_permalink(link, folder_name=''):
 	print("Number of segments: {}".format(len(data['data'][0]['track_segments'])))
 	segments_arr = manager.list([None] * len(data['data'][0]['track_segments']))
 
+	link = urllib.parse.unquote(link)
 	r = resolve_link(link, endpoint)
 	node_json = json.loads(r)
 
@@ -354,6 +355,7 @@ def download_album(link):
 	endpoint = get_available_endpoint()
 	print(f"API endpoint: {endpoint}")
 
+	link = urllib.parse.unquote(link)
 	res = resolve_link(link, endpoint)
 	j = json.loads(res)
 	try:
@@ -376,6 +378,7 @@ def download_profile(link):
 	endpoint = get_available_endpoint()
 	print(f"API endpoint: {endpoint}")
 
+	link = urllib.parse.unquote(link)
 	res = resolve_link(link, endpoint)
 	j = json.loads(res)
 	user_id = j['data']['id']
@@ -409,6 +412,7 @@ def download_profile_deleted_tracks(link):
 	endpoint = get_available_endpoint()
 	print(f"API endpoint: {endpoint}")
 
+	link = urllib.parse.unquote(link)
 	res = resolve_link(link, endpoint)
 	j = json.loads(res)
 	user_id = j['data']['id']
