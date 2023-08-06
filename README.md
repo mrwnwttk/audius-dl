@@ -1,6 +1,9 @@
 # audius-dl
 Downloader for Audius
 
+## Disclaimer
+**This downloader is broken** as of 2023/08 (or earlier, I personally haven't used it in ages), see [this issue](https://github.com/mrwnwttk/audius-dl/issues/7#issuecomment-1666820738). I have no intention of working on it any further. Feel free to fork this repo and fix it, should be fairly straightforward.
+
 ## Installation
 In this case the Python 3 instance is named `python3`. Here's an example using Ubuntu:
 ```
